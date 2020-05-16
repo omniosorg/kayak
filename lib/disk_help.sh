@@ -156,9 +156,9 @@ MakeSwapDump() {
     # We're creating both swap and dump volumes of the same size
     ((totalvols = size * 2))
 
-    # We want at least 10GB left free after swap/dump
+    # We want at least free - 10% and 10GB left free after swap/dump
     # If we can't make swap/dump at least 1G each, don't bother
-    ((usable = free - 10))
+    usable=`echo "scale=0;$free * 9/10 - 11" | /bin/bc`
 
     if [ $usable -lt 2 ]; then
         log "Not enough free space for reasonably-sized swap and dump;"\
