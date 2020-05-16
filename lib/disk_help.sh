@@ -159,6 +159,7 @@ MakeSwapDump() {
     # We want at least 10GB left free after swap/dump
     # If we can't make swap/dump at least 1G each, don't bother
     ((usable = free * 9 / 10 -  11))
+    
     if [ $usable -lt 2 ]; then
         log "Not enough free space for reasonably-sized swap and dump;"\
             " not creating either."
