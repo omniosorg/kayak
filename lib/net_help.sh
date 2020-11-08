@@ -19,7 +19,7 @@
 # Returns a mac address as 12 hex characters, upper-case, from the first
 # non-loopback interface in the system.
 Ether() {
-    local mac="`dladm show-phys -m -p -o ADDRESS | \
+    local mac="`/sbin/dladm show-phys -m -p -o ADDRESS | \
         /bin/tr '[:lower:]' '[:upper:]' | \
         sed '
             s/^/ 0/g
