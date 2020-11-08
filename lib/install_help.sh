@@ -30,6 +30,17 @@ SetupLog() {
     exec 4>>$INSTALL_LOG
 }
 
+# Check to see if this system has an rpool. We want to guard against install
+# over an already configured system should it accidentally PXE boot.
+FailIfRpoolExists() {
+    zpool import -a
+    res=`zpool list | grep rpool`
+
+    if [[ "$?" -eq "0" ]]; then
+        bomb "This is an installed system. To reinstall, destroy rpool and reboot."
+    fi
+}
+
 # Set up logging so that log messages go to the console and that stdout/stderr
 # go to a log file at the provided path.
 ConsoleLog() {

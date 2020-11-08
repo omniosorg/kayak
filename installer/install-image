@@ -26,6 +26,8 @@
 #
 
 . /kayak/lib/install_help.sh
+
+FailIfRpoolExists
 ConsoleLog /tmp/kayak.log
 ForceDHCP
 RunInstall || bomb "RunInstall failed."
