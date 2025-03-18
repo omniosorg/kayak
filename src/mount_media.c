@@ -58,6 +58,7 @@
 static bool mounted = false;
 static bool verbose = false;
 static bool debug = false;
+static bool tryharder = false;
 
 static int
 check_volsetid(const char *volid)
@@ -323,6 +324,9 @@ mount_minor(di_node_t node, di_minor_t minor, void *arg)
 		goto mount;
 	if (dkinfo.dki_ctype == DKC_DIRECT && strcmp(driver, "cmdk") == 0)
 		goto mount;
+	/* Try generic block devices too if we're trying harder */
+	if (tryharder && dkinfo.dki_ctype == DKC_BLKDEV)
+		goto mount;
 
 	goto end;
 
@@ -345,6 +349,7 @@ int
 main(int argc, char **argv)
 {
 	di_node_t root_node;
+	char *volid;
 
 	while (argc > 1 && *argv[1] == '-') {
 		if (strcmp(argv[1], "-v") == 0) {
@@ -362,10 +367,22 @@ main(int argc, char **argv)
 		return (1);
 	}
 
+	volid = argv[1];
+
 	/* Initialize libdevinfo and walk the tree */
 	if ((root_node = di_init("/", DINFOCPYALL)) == DI_NODE_NIL)
 		err(1, "Failed to initialise root node");
-	(void) di_walk_minor(root_node, DDI_NT_BLOCK, 0, argv[1], mount_minor);
+	(void) di_walk_minor(root_node, DDI_NT_BLOCK, 0, volid, mount_minor);
+	if (!mounted) {
+		/*
+		 * If we failed to find a device, loop through again and try
+		 * harder. This generally means we'll attempt to mount every
+		 * block device we find.
+		 */
+		tryharder = true;
+		(void) di_walk_minor(root_node, DDI_NT_BLOCK, 0, volid,
+		    mount_minor);
+	}
 	di_fini(root_node);
 
 	return (mounted ? 0 : 1);
