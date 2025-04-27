@@ -12,7 +12,7 @@
 # http://www.illumos.org/license/CDDL.
 # }}}
 #
-# Copyright 2023 OmniOS Community Edition (OmniOSce) Association.
+# Copyright 2025 OmniOS Community Edition (OmniOSce) Association.
 #
 
 SRCDIR=`dirname $0`
@@ -24,22 +24,19 @@ SRCDIR=`dirname $0`
 
 typeset -i QEMU=0
 typeset -i RPI=0
-typeset -i RPIMBR=0
 
-while getopts "qrm" opt; do
+while getopts "qr" opt; do
     case $opt in
         q)  QEMU=1 ;;
         r)  RPI=1 ;;
-        m)  RPIMBR=1 ;;
         *)  print -u2 "Syntax: $0 [-qr]"; exit 2 ;;
     esac
 done
 
 # If nothing is specified, build everything
-if ((QEMU + RPI + RPIMBR == 0)); then
+if ((QEMU + RPI == 0)); then
     QEMU=1
     RPI=1
-    RPIMBR=1
 fi
 
 [ -z "$BUILDSEND_MP" ] && BUILDSEND_MP=/kayak_image
@@ -53,6 +50,11 @@ note() {
     echo "*** $*"
     echo "***"
     tput sgr0
+}
+
+fail() {
+    note "$@" >&2
+    exit 1
 }
 
 set -e
@@ -79,6 +81,15 @@ customise() {
 
     # Set the default timezone to UTC (it's PST in illumos-gate)
     img_set_timezone $root UTC
+
+    # Drop a boot config override into the loader configs to allow booting from
+    # an implementation architecture, to prefer the serial console, and to boot
+    # verbosely.
+    cat << 'EOM' > $root/boot/conf.d/00-aarch64-defaults.conf
+bootfile="/platform/${IMPLARCH}/kernel/${ISADIR}/unix;/platform/${BASEARCH}/kernel/${ISADIR}/unix"
+console="${default-uart-name},text"
+boot-args="-vm verbose"
+EOM
 
     # Enable the extra repo
     pkg -R "$root" set-publisher --no-refresh -O $OOCEBRAICHURL $EXTRAPUB
@@ -114,20 +125,21 @@ EOM
 
     cat ./etc/system.d/* > ./etc/system.d/.self-assembly
 
-    typeset filelist=./platform/armv8/archive_cache
-
+    mkdir -p ./platform/armv8/aarch64
+    typeset filelist=./platform/armv8/aarch64/archive_cache
     ./boot/solaris/bin/extract_boot_filelist \
         -R $root -p aarch64 boot/solaris/filelist.ramdisk \
         | while read file; do
             [ -e "$file" ] && find "$file" -type f
         done | awk '{printf("/%s=./%s\n", $1, $1)}' > $filelist
+    chmod 644 $filelist
 
     mkisofs \
         -quiet \
         -graft-points \
         -dlrDJN \
         -relaxed-filenames \
-        -o ./platform/armv8/boot_archive \
+        -o ./platform/armv8/aarch64/boot_archive \
         `cat $filelist`
 
     sed -i 's/=\./=/' $filelist
@@ -147,10 +159,9 @@ customise_qemu() {
 
     customise "$root"
 
-    cp $root/platform/QEMU,virt/inetboot.bin \
-        $BUILDSEND_MP/braich-$VERSION.inetboot
     cp $SRCDIR/../bin/u-boot.qemu_arm64_defconfig \
         $BUILDSEND_MP/braich-$VERSION.u-boot
+    cp $root/boot/loader64.efi $BUILDSEND_MP/braich-$VERSION.loader
 }
 
 customise_rpi4() {
@@ -173,12 +184,9 @@ pidfile /var/run/chrony/chronyd.pid
 makestep 900 -1
 EOM
 
-    for var in braich-rpi4 braich-rpi4-mbr; do
-        cp $root/platform/RaspberryPi,4/inetboot \
-            $BUILDSEND_MP/$var-$VERSION.inetboot
-        cp $SRCDIR/../bin/u-boot.rpi_4_defconfig \
-            $BUILDSEND_MP/$var-$VERSION.u-boot
-    done
+    cp $SRCDIR/../bin/u-boot.rpi_4_defconfig \
+        $BUILDSEND_MP/braich-rpi4-$VERSION.u-boot
+    cp $root/boot/loader64.efi $BUILDSEND_MP/braich-rpi4-$VERSION.loader
 }
 
 ##############################################################################
@@ -198,18 +206,39 @@ export_raw() {
     zstd -9fv --rm $basef.raw
 }
 
+make_bootfs() {
+    # Format and populate the boot partition with the files needed to boot
+
+    FAT_RAW=${HVMrlofi/p0/s0}
+    FAT_BLK=${HVMlofi/p0/s0}
+
+    typeset boot=`mktemp -d`
+    yes | sudo mkfs -F pcfs -o fat=32,b=bootfs $FAT_RAW || true
+    sudo mount -F pcfs $FAT_BLK $boot
+    [ -d "$boot" ] || fail "Failed to create boot fs"
+
+    printf "%s" $boot
+}
+
 build_qemu() {
     typeset basef="$1"
 
     note "Building QEMU image"
 
     HVM_Image_Init 8G rpool braich omnios-r$VERSION
-    # Create boot partition even though UEFI boot is not yet supported.
     HVM_Image_Build "-B -o ashift=12" \
         $ZFSSEND braich customise_qemu -noactivate
-    HVM_Image_Finalise 1 \
-        "/dev/dsk/c1t0d0s1" "/virtio_mmio@a003c00/blkdev@0,0:b" "" \
+    HVM_Image_Finalise 1 "/dev/dsk/c1t0d0s1" \
+        "/virtio_mmio@a003c00/vioblk@a003c00/blkdev@0,0:b" "" \
         -keeplofi
+
+    typeset boot=`make_bootfs`
+
+    mkdir -p $boot/EFI/BOOT
+    cp $basef.loader $boot/EFI/BOOT/bootaa64.efi
+
+    umount $boot
+    rm -rf $boot
 
     export_raw $basef $HVMlofi
 
@@ -219,106 +248,34 @@ build_qemu() {
 
 build_rpi4() {
     typeset basef="$1"; shift
-    typeset -i mbr=0
 
-    while [[ "$1" = -* ]]; do
-        case $1 in
-            -mbr)   mbr=1 ;;
-            *)      echo "Unknown flag $1" ;;
-        esac
-        shift
-    done
+    note "Building EFI rpi4 image"
 
-    ((mbr)) && note "Building MBR rpi4 image" || note "Building EFI rpi4 image"
+    # Keep it small so it's quick to write to the SD card. It will
+    # auto-expand on first boot.
+    HVM_Image_Init 2G rpool braich omnios-r$VERSION
+    HVM_Image_Build "-B -o bootsize=256M -o ashift=9" \
+        $ZFSSEND braich customise_rpi4 -noactivate
 
-    if ((mbr)); then
-        # It's hard to grow this later (unlike EFI partitioning where the zfs
-        # pool will auto-expand to fill the available space).
-        HVM_Image_Init 4G rpool braich omnios-r$VERSION
-
-        # We don't use HVM_MBR_Init because we need to create two partitions
-        # on this disk. The first is FAT32 and holds the files required to
-        # boot the Raspberry Pi, and that is followed by a Solaris2 partition
-        # that occupies the remaining space. That second partition then
-        # contains a VTOC and the ZFS pool is created on the first slice of
-        # that VTOC. That means that when you see "s0" below, this represents
-        # the first slice in the VTOC in the second partition.
-
-        # These were derived from the partition structure on  an official
-        # Raspberry Pi Linux. There may be some improvements possible here.
-        FAT_SECTORS=524288      # Ends up being ~256MiB
-        RESV_FAT_SECTORS=8192
-        RESV_SOL_SECTORS=532480
-
-        # Calculate the total number of available sectors by creating a single
-        # sol2 partition that spans the entire disk and reading the Numsect
-        # value back out.
-        sudo fdisk -B $HVMrlofi
-        # Id Act Bhead Bsect Bcyl Ehead Esect Ecyl Rsect Numsect
-        set -- $(sudo fdisk -W - $HVMrlofi | awk '$1 == 191 { print }')
-        TOTAL_SECTORS=${10}
-
-        # Now create the real partition table, small FAT32 partition followed
-        # by a solaris one filling the remaining space.
-
-        ((ZPOOL_SECTORS = TOTAL_SECTORS - FAT_SECTORS - RESV_FAT_SECTORS))
-
-        #       id act bhead bsect bcyl ehead esect ecyl rsect numsect
-        tf=`mktemp`
-        cat <<EOM > $tf
-12 0 0 1 64 3 32 1023 $RESV_FAT_SECTORS $FAT_SECTORS
-191 128 3 32 1023 3 32 1023 $RESV_SOL_SECTORS $ZPOOL_SECTORS
-EOM
-        sudo fdisk -F $tf $HVMrlofi
-        rm -f $tf
-
-        # Set up a VTOC in the second partition.
-        # Create slice 0 covering all of the non-reserved space.
-        OIFS="$IFS"; IFS=" ="
-        set -- `sudo prtvtoc -f $HVMrlofi`
-        IFS="$OIFS"
-        # FREE_START=2048 FREE_SIZE=196608 FREE_COUNT=1 FREE_PART=...
-        start=$2; size=$4
-        sudo fmthard -d 0:2:01:$start:$size $HVMrlofi
-
-        HVMdisk+=s0 HVM_Image_Build "-f -o ashift=9" $ZFSSEND \
-            braich customise_rpi4 -noactivate
-
-        slice=0
-        FAT_RAW=${HVMrlofi}:c
-        FAT_BLK=${HVMlofi}:c
-    else
-        # Keep it small so it's quick to write to the SD card. It will
-        # auto-expand on first boot.
-        HVM_Image_Init 2G rpool braich omnios-r$VERSION
-        HVM_Image_Build "-B -o bootsize=256M -o ashift=9" \
-            $ZFSSEND braich customise_rpi4 -noactivate
-
-        slice=1
-        FAT_RAW=${HVMrlofi/p0/s0}
-        FAT_BLK=${HVMlofi/p0/s0}
-    fi
+    slice=1
 
     HVM_Image_Finalise $slice \
         "/dev/dsk/c1t0d0s$slice" "/emmc2bus/mmc@7e340000/blkdev@0,0:b" "" \
         -keeplofi
 
-    # Format and populate the boot partition with the files needed to boot
+    typeset boot=`make_bootfs`
 
     # The boot sequence is:
     #   - ROM stage1 bootloader
     #   - SPI flash stage2 bootloader (was bootcode.bin on previous models)
     #   - arm trusted firmware bl31.bin
     #   - u-boot
-    #   - inetboot
+    #   - loader
     #   - illumos kernel
 
-    boot=`mktemp -d`
-    yes | sudo mkfs -F pcfs -o fat=32,b=bootfs $FAT_RAW || true
-    sudo mount -F pcfs $FAT_BLK $boot
-
-    cp $basef.inetboot $boot/inetboot
+    mkdir -p $boot/EFI/BOOT
     cp $basef.u-boot $boot/u-boot.bin
+    cp $basef.loader $boot/EFI/BOOT/bootaa64.efi
 
     cp $SRCDIR/../bin/bl31.bin $boot/
 
@@ -365,7 +322,6 @@ EOM
 
 ((QEMU)) && build_qemu $BUILDSEND_MP/braich-$VERSION
 ((RPI)) && build_rpi4 $BUILDSEND_MP/braich-rpi4-$VERSION
-((RPIMBR)) && build_rpi4 $BUILDSEND_MP/braich-rpi4-mbr-$VERSION -mbr
 
 # Vim hints
 # vim:ts=4:sw=4:et:fdm=marker
