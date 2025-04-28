@@ -154,6 +154,7 @@ bin/firmware-$(RPIFWVER):
 	tar xf bin/firmware-$(RPIFWVER).tar.gz \
 	    firmware-$(RPIFWVER)/boot -C bin
 	rm -f bin/firmware-$(RPIFWVER).tar.gz
+	ln -sf firmware-$(RPIFWVER) bin/rpi-firmware
 
 bin/u-boot.rpi_4_defconfig bin/u-boot.rpi_arm64_defconfig: build/u-boot
 	./build/u-boot
