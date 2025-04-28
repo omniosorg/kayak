@@ -39,5 +39,6 @@ for tgt in $TARGETS; do
 	[ -f "$tgt/u-boot.bin" ] || exit 1
 	cp $tgt/u-boot.bin $SRC/bin/u-boot.$tgt
 done
+cp -rp $PROG-$VER/Licenses $SRC/bin/u-boot.licences
 cd $SRC
 

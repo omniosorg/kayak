@@ -29,4 +29,5 @@ if [ ! -f "$out" ]; then
 fi
 
 cp $out ./bin/bl31.bin
+cp $dir/$PROG-$VER/licenses/LICENSE.MIT ./bin/bl31.licence
 
