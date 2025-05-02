@@ -27,7 +27,7 @@ machine's SMF services.
 
 `install-tftp`:
 	Builds the miniroot.gz file, which is what PXE Kayak feeds to
-	GRUB or Loader to boot itself on a PXE boot. Independent target.
+	Loader to boot itself on a PXE boot. Independent target.
 
 `install-iso`:
 	Builds both `install-{web,tftp}` and then proceeds to construct
@@ -43,11 +43,11 @@ Operation
 DHCP server:
  * your server should be set to PXE boot
  * the DHCP server must return and IP, a nextserver and a bootfile
- * the boot file should be the file `/boot/grub/pxegrub` or `/boot/pxeboot` from an existing OmniOS system
+ * the boot file should be the file `/boot/pxeboot` from an existing OmniOS system
 
 TFTP server:
- * `menu.lst.01<macaddr_just_hex_caps>` based on the template provided in this directory should be placed in `/tftpboot/` if using grub, or put `loader.conf.local` in `/tftpboot/boot`
- * `/boot/grub/pxegrub` or `/boot/pxeboot` should be placed in `/tftpboot/`
+ * place `loader.conf.local` in `/tftpboot/boot`
+ * `/boot/pxeboot` should be placed in `/tftpboot/`
  * `/platform/i86pc/kernel/amd64/unix` should be placed in `/tftpboot/omnios/kayak/`
  * the `miniroot.gz` file should be placed in `/tftpboot/omnios/kayak/`
 

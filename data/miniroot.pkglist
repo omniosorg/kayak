@@ -128,7 +128,6 @@ service/picl
 shell/bash
 shell/pipe-viewer
 system/bhyve
-system/boot/grub
 system/boot/loader
 system/boot/real-mode
 system/cpuid
