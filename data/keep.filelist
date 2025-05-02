@@ -23,7 +23,6 @@
 /sbin/ifconfig
 /sbin/ifparse
 /sbin/init
-/sbin/installgrub
 /sbin/ipadm
 /sbin/mount
 /sbin/mountall
