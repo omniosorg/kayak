@@ -603,10 +603,8 @@ enum zio_compress {
 #define	SPA_VERSION_5000		5000ULL
 
 /*
- * When bumping up SPA_VERSION, make sure GRUB ZFS understands the on-disk
- * format change. Go to usr/src/grub/grub-0.97/stage2/{zfs-include/, fsys_zfs*},
- * and do the appropriate changes.  Also bump the version number in
- * usr/src/grub/capability.
+ * When bumping up SPA_VERSION, make sure Loader ZFS understands the on-disk
+ * format change.
  */
 #define	SPA_VERSION			SPA_VERSION_5000
 #define	SPA_VERSION_STRING		"5000"

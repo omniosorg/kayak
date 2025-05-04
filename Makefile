@@ -31,14 +31,12 @@ PKGFILES=Makefile README.md
 TFTP_FILES=\
 	$(DESTDIR)/tftpboot/kayak/miniroot.gz \
 	$(DESTDIR)/tftpboot/kayak/miniroot.gz.hash \
-	$(DESTDIR)/tftpboot/boot/grub/menu.lst \
 	$(DESTDIR)/tftpboot/boot/loader.conf.local \
 	$(DESTDIR)/tftpboot/boot/loader.rc \
 	$(DESTDIR)/tftpboot/boot/forth \
 	$(DESTDIR)/tftpboot/boot/defaults \
 	$(DESTDIR)/tftpboot/boot/platform/i86pc/kernel/amd64/unix \
-	$(DESTDIR)/tftpboot/pxeboot \
-	$(DESTDIR)/tftpboot/pxegrub
+	$(DESTDIR)/tftpboot/pxeboot
 
 GZ_ZFS_STREAM=$(DESTDIR)/var/kayak/kayak/$(VERSION).zfs.xz
 NGZ_ZFS_STREAM=$(DESTDIR)/var/kayak/kayak/$(VERSION).ngz.zfs.xz
@@ -46,13 +44,7 @@ NGZ_ZFS_STREAM=$(DESTDIR)/var/kayak/kayak/$(VERSION).ngz.zfs.xz
 $(DESTDIR)/tftpboot/boot/loader.conf.local:	etc/loader.conf.local
 	sed -e 's/@VERSION@/$(VERSION)/' $< > $@
 
-$(DESTDIR)/tftpboot/boot/grub/menu.lst:	sample/menu.lst.000000000000
-	sed -e 's/@VERSION@/$(VERSION)/' $< > $@
-
 # Files from proto
-
-$(DESTDIR)/tftpboot/pxegrub:	$(BUILDSEND_MP)/miniroot/boot/grub/pxegrub
-	cp -p $< $@
 
 $(DESTDIR)/tftpboot/pxeboot:	$(BUILDSEND_MP)/miniroot/boot/pxeboot
 	cp -p $< $@
@@ -108,7 +100,6 @@ $(BUILDSEND_MP)/miniroot.gz:	build/miniroot
 	fi
 
 tftp-dirs:
-	mkdir -p $(DESTDIR)/tftpboot/boot/grub
 	mkdir -p $(DESTDIR)/tftpboot/boot/platform/i86pc/kernel/amd64
 	mkdir -p $(DESTDIR)/tftpboot/kayak
 
