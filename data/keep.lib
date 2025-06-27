@@ -45,7 +45,7 @@
 /lib/amd64/libuuid.so.1
 /lib/amd64/libuutil.so.1
 /lib/amd64/libvarpd.so.1
-/lib/amd64/libxml2.so.*
+/lib/amd64/libxml2.so.2*
 /lib/amd64/libz.so
 /lib/amd64/libz.so.*
 /lib/amd64/libzfs.so
@@ -113,7 +113,7 @@
 /lib/libuuid.so.1
 /lib/libuutil.so.1
 /lib/libvarpd.so.1
-/lib/libxml2.so.*
+/lib/libxml2.so.2*
 /lib/libxnet.so.1
 /lib/libz.so
 /lib/libz.so.*
