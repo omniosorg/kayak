@@ -314,8 +314,6 @@
 /usr/lib/libinstzones.so.1
 /usr/lib/libipmi.so.1
 /usr/lib/libl.so.1
-/usr/lib/liblzma.so
-/usr/lib/liblzma.so.*
 /usr/lib/libmd.so.1
 /usr/lib/libnvpair.so.1
 /usr/lib/libpcidb.so.1
