@@ -1193,7 +1193,7 @@ function load_console {
 	s=$ALTROOT/boot/conf.d/serial
 	if [ -f $s ]; then
 		con_sconsole=`grep '^os_console=' $s | cut -d'"' -f2`
-		modeline=`grep '^ttya-mode=' $s | cut -d'"' -f2`
+		modeline=`grep '^tty.-mode=' $s | cut -d'"' -f2`
 		con_baud=`echo $modeline | cut -d, -f1`
 		con_dbits=`echo $modeline | cut -d, -f2`
 		con_parity=`echo $modeline | cut -d, -f3`
@@ -1214,9 +1214,9 @@ function save_console {
 	else
 		echo -h > $ALTROOT/boot/config
 		cat <<- EOM > $ALTROOT/boot/conf.d/serial
-		console="$con_sconsole"
-		os_console="$con_sconsole"
-		ttya-mode="$con_baud,$con_dbits,${con_parity:0:1},$con_sbits,-"
+	console="$con_sconsole"
+	os_console="$con_sconsole"
+	$con_sconsole-mode="$con_baud,$con_dbits,${con_parity:0:1},$con_sbits,-"
 		EOM
 	fi
 	return 0
