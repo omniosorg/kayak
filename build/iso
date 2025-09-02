@@ -172,7 +172,10 @@ stage "Adding extra files to boot archive"
 # Extra files
 for dir in bin; do
 	[ -d $BA_ROOT/kayak/$dir ] || mkdir -p $BA_ROOT/kayak/$dir
-	cp -p $dir/* $BA_ROOT/kayak/$dir/
+	for f in $dir/*; do
+		[ -f "$f" ] || continue
+		cp "$f" $BA_ROOT/kayak/$dir/
+	done
 done
 
 if [ -n "$REFRESH_KAYAK" ]; then
