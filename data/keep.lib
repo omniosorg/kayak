@@ -21,6 +21,7 @@
 /lib/amd64/libfdisk.so.1
 /lib/amd64/libgen.so.1
 /lib/amd64/libinetutil.so.1
+/lib/amd64/libintl.so.1
 /lib/amd64/libkstat.so.1
 /lib/amd64/libm.so.2
 /lib/amd64/libmd.so.1
