@@ -40,6 +40,7 @@ TFTP_FILES=\
 
 GZ_ZFS_STREAM=$(DESTDIR)/var/kayak/kayak/$(VERSION).zfs.xz
 NGZ_ZFS_STREAM=$(DESTDIR)/var/kayak/kayak/$(VERSION).ngz.zfs.xz
+ZFS_SEND_ARGS?=
 
 $(DESTDIR)/tftpboot/boot/loader.conf.local:	etc/loader.conf.local
 	sed -e 's/@VERSION@/$(VERSION)/' $< > $@
@@ -79,17 +80,17 @@ $(DESTDIR)/tftpboot/kayak/miniroot.gz.hash:	$(BUILDSEND_MP)/miniroot.gz
 $(BUILDSEND_MP)/kayak_$(VERSION).zfs.xz:	build/zfs_send
 	@banner "ZFS GZ IMG"
 	@test -d "$(BUILDSEND_MP)" || (echo "$(BUILDSEND) missing" && false)
-	./$< -d $(BUILDSEND) $(VERSION)
+	./$< -d $(BUILDSEND) $(ZFS_SEND_ARGS) $(VERSION)
 
 $(BUILDSEND_MP)/kayak_$(VERSION).ngz.zfs.xz:	build/zfs_send
 	@banner "ZFS NGZ IMG"
 	@test -d "$(BUILDSEND_MP)" || (echo "$(BUILDSEND) missing" && false)
-	./$< -d $(BUILDSEND) -V nonglobal $(VERSION)
+	./$< -d $(BUILDSEND) -V nonglobal $(ZFS_SEND_ARGS) $(VERSION)
 
 $(BUILDSEND_MP)/aarch64_$(VERSION).zfs.xz:	build/zfs_send
 	@banner "AARCH64 IMG"
 	@test -d "$(BUILDSEND_MP)" || (echo "$(BUILDSEND) missing" && false)
-	./$< -d $(BUILDSEND) -a aarch64 $(VERSION)
+	./$< -d $(BUILDSEND) -a aarch64 $(ZFS_SEND_ARGS) $(VERSION)
 
 $(BUILDSEND_MP)/miniroot.gz:	build/miniroot
 	@banner "MINIROOT"
