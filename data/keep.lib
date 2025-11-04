@@ -21,6 +21,7 @@
 /lib/amd64/libfdisk.so.1
 /lib/amd64/libgen.so.1
 /lib/amd64/libinetutil.so.1
+/lib/amd64/libintl.so.1
 /lib/amd64/libkstat.so.1
 /lib/amd64/libm.so.2
 /lib/amd64/libmd.so.1
@@ -217,6 +218,7 @@
 /usr/lib/amd64/libhistory.so.8
 /usr/lib/amd64/libidmap.so.1
 /usr/lib/amd64/libidspace.so.1
+/usr/lib/amd64/libintl.so.1
 /usr/lib/amd64/libjedec.so.1
 /usr/lib/amd64/libkvm.so
 /usr/lib/amd64/libkvm.so.1
