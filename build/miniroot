@@ -23,6 +23,7 @@ SRCDIR=`dirname $0`
 KYKDIR=$SRCDIR/..
 
 . $KYKDIR/lib/defs.sh
+. $SRCDIR/../lib/utils.sh
 
 fail() {
     echo "ERROR: $*" >&2
@@ -421,6 +422,8 @@ function step_copy {
         cp $KYKDIR/etc/anon.system $WORKDIR/mnt/etc/system
         cp $KYKDIR/etc/anon.dtrace.conf $WORKDIR/mnt/kernel/drv/dtrace.conf
     fi
+
+    apply_custom_overlay $MINIROOT_CUSTOM_OVERLAY $WORKDIR/mnt
 
     chkpt umount
 }
