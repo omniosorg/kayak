@@ -146,5 +146,31 @@ function logadm_rsyslog {
     ' $altroot/etc/logadm.conf
 }
 
+function apply_custom_overlay {
+    typeset custom_overlay="$1"
+    typeset workdir="$2"
+
+    [ -z "$custom_overlay" ] && return 0
+    [ ! -d "$custom_overlay" ] && return 0
+
+    echo " --- applying custom overlay from $custom_overlay"
+
+    typeset -i file_count=0
+    typeset -i dir_count=0
+
+    file_count=`cd "$custom_overlay" && find . -type f | wc -l`
+    dir_count=`cd "$custom_overlay" && find . -type d | wc -l`
+
+    pushd "$custom_overlay" >/dev/null
+    find . | cpio -pdum "$workdir" 2>&1 >/dev/null || {
+        echo " WARNING: Failed to apply overlay completely"
+        popd >/dev/null
+        return 1
+    }
+
+    popd >/dev/null
+    echo " Applied $file_count file(s) from $dir_count directories"
+}
+
 # Vim hints
 # vim:ts=4:sw=4:et:fdm=marker
