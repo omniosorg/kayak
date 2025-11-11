@@ -22,6 +22,7 @@ SRCDIR=`dirname $0`
 KYKDIR=$SRCDIR/..
 
 . $KYKDIR/lib/defs.sh
+. $SRCDIR/../lib/utils.sh
 
 fail() {
     echo $*
@@ -265,6 +266,8 @@ if [ "$VARIANT" = nonglobal ]; then
     # Set a blank password for root (to enable zlogin to zone)
     sed -i -e 's%^root::%root:$5$kr1VgdIt$OUiUAyZCDogH/uaxH71rMeQxvpDEY2yX.x0ZQRnmeb9:%' $MP/etc/shadow
 fi
+
+apply_custom_overlay $ZFS_CUSTOM_OVERLAY $MP
 
 note "Creating compressed stream"
 zfs snapshot $ZDATASET@kayak || fail "snap"
