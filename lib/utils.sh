@@ -149,6 +149,7 @@ function logadm_rsyslog {
 function apply_custom_overlay {
     typeset custom_overlay="$1"
     typeset workdir="$2"
+    typeset hooks_dir=".overlay-hooks"
 
     [ -z "$custom_overlay" ] && return 0
     [ ! -d "$custom_overlay" ] && return 0
@@ -170,6 +171,19 @@ function apply_custom_overlay {
 
     popd >/dev/null
     echo " Applied $file_count file(s) from $dir_count directories"
+
+    if [ -d "$workdir/$hooks_dir" ]; then
+        echo " --- running post-overlay hooks"
+        for hook in "$workdir/$hooks_dir"/*.sh; do
+            [ ! -f "$hook" ] && continue
+            echo " Running hook: $(basename $hook)"
+            bash "$hook" "$workdir" || {
+                echo " WARNING: Hook $(basename $hook) failed"
+            }
+        done
+        rm -rf "$workdir/$hooks_dir"
+        echo " Post-overlay hooks completed"
+    fi
 }
 
 # Vim hints
