@@ -9,7 +9,7 @@
 # source. A copy of the CDDL is also available via the Internet at
 # http://www.illumos.org/license/CDDL.
 
-# Copyright 2024 OmniOS Community Edition (OmniOSce) Association.
+# Copyright 2026 OmniOS Community Edition (OmniOSce) Association.
 
 SITE=https://mirrors.omnios.org/dialog
 VER=1.3-20240619
@@ -24,19 +24,24 @@ dir=`/usr/gnu/bin/mktemp -d`
 	curl -fLO $URL
 	gtar -zxf $FILE
 	cd $PROG-$VER
-	./configure CFLAGS=-m32
+	./configure CFLAGS="-m32 -std=gnu17"
 	gmake
 )
 
 out=$dir/$PROG-$VER/$PROG
 
 if [ ! -f "$out" ]; then
-	echo "Failed to build dialog"
+	print -u2 "Failed to build dialog"
 	exit 1
 fi
 
 cp $out ./bin/$PROG
 strip bin/$PROG
+ldd bin/$PROG | egrep -s ncurses && {
+	print -u2 "Dialogue binary should not be using ncurses"
+	print "DIR: $dir"
+	exit 1
+}
 
 rm -rf $dir
 
