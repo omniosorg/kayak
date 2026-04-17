@@ -181,6 +181,7 @@ fi
 if [ -n "$PROFILE" ]; then
     note "Applying custom profile: $PROFILE"
     [ -r "$PROFILE" ] || fail "Cannot find file: $PROFILE"
+    typeset -a profile_pkgs=()
     while read line; do
         TMPPUB=`echo $line | cut -f1 -d=`
         TMPURL=`echo $line | cut -f2 -d=`
@@ -191,10 +192,14 @@ if [ -n "$PROFILE" ]; then
             OOCEPUB=$TMPPUB
             PKGURL=$TMPURL
         else
-            note "Installing additional package: $line"
-            pkg install -g $PKGURL $line || fail "install $line"
+            profile_pkgs+=($line)
         fi
     done < <(grep . $PROFILE | grep -v '^ *#')
+    if [ ${#profile_pkgs[@]} -gt 0 ]; then
+        note "Installing ${#profile_pkgs[@]} additional packages"
+        pkg install -g $PKGURL ${profile_pkgs[@]} \
+            || fail "install profile packages"
+    fi
 fi
 
 # Starting with r151014, require signatures for the omnios publishers.
