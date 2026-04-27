@@ -125,6 +125,14 @@ function getvar {
     prtconf -v /devices | sed -n '/'$1'/{;n;p;}' | cut -f2 -d\' | pipelog
 }
 
+BENAME=${BENAME:-omnios}
+BENAME_SET=
+function BEName {
+    log "Setting boot environment name to $1"
+    BENAME="$1"
+    BENAME_SET=1
+}
+
 # Blank
 ROOTPW='$5$kr1VgdIt$OUiUAyZCDogH/uaxH71rMeQxvpDEY2yX.x0ZQRnmeb9'
 function RootPW {
@@ -238,7 +246,7 @@ function BE_LinkMsglog {
 function BuildBE {
     RPOOL=${1:-rpool}
     typeset MEDIA="$2"
-    typeset _bename=${3:-omnios}
+    typeset _bename=${3:-$BENAME}
 
     if [ -z "$MEDIA" ]; then
         BOOTSRVA=`/sbin/dhcpinfo BootSrvA`
@@ -294,7 +302,7 @@ function FetchConfig {
 
 function MakeBootable {
     typeset _rpool=${1:-rpool}
-    typeset _bename=${2:-omnios}
+    typeset _bename=${2:-$BENAME}
     slog "Making boot environment bootable"
     logcmd zpool set bootfs=$_rpool/ROOT/$_bename $_rpool
     # Must do beadm activate first on the off chance we're bootstrapping from
