@@ -174,16 +174,21 @@ function apply_custom_overlay {
 
     if [ -d "$workdir/$hooks_dir" ]; then
         echo " --- running post-overlay hooks"
+        typeset -i hook_rc=0
         for hook in "$workdir/$hooks_dir"/*.sh; do
             [ ! -f "$hook" ] && continue
             echo " Running hook: $(basename $hook)"
             bash "$hook" "$workdir" || {
-                echo " WARNING: Hook $(basename $hook) failed"
+                echo " ERROR: Hook $(basename $hook) failed"
+                hook_rc=1
             }
         done
         rm -rf "$workdir/$hooks_dir"
         echo " Post-overlay hooks completed"
+        [ $hook_rc -ne 0 ] && return 1
     fi
+
+    return 0
 }
 
 # Vim hints

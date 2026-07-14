@@ -423,7 +423,7 @@ function step_copy {
         cp $KYKDIR/etc/anon.dtrace.conf $WORKDIR/mnt/kernel/drv/dtrace.conf
     fi
 
-    apply_custom_overlay "$MINIROOT_CUSTOM_OVERLAY" "$WORKDIR/mnt"
+    apply_custom_overlay "$MINIROOT_CUSTOM_OVERLAY" "$WORKDIR/mnt" || fail "custom overlay failed"
 
     chkpt umount
 }
