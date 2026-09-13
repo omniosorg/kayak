@@ -1,0 +1,16 @@
+<?xml version='1.0'?>
+<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+<!--
+    Enable address space layout randomisation (ASLR) by default for all
+    processes started by the service management facility. See
+    security-flags(7) and psecflags(1).
+-->
+<service_bundle type='profile' name='site'
+    xmlns:xi='http://www.w3.org/2003/XInclude'>
+  <service name='system/process-security' version='1' type='service'>
+    <property_group name='default' type='application'>
+      <propval name='aslr' type='boolean' value='true'/>
+    </property_group>
+    <instance name='default' enabled='true'/>
+  </service>
+</service_bundle>
