@@ -25,6 +25,7 @@
 . /kayak/lib/disk_help.sh
 
 SetupLog /tmp/kayak.log
+BEName $BENAME
 
 keyboard_layout=${1:-US-English}
 
@@ -411,9 +412,11 @@ d_info "Preparing to install..."
 # Because of kayak's small miniroot, just use C as the language for now.
 LANG=C
 
-bename=omnios
-ver=`head -1 /etc/release | awk '{print $3}'`
-[ -n "$ver" ] && bename+="-$ver"
+bename=$BENAME
+if [ -z "$BENAME_SET" ]; then
+    ver=`head -1 /etc/release | awk '{print $3}'`
+    [ -n "$ver" ] && bename+="-$ver"
+fi
 
 BuildBE $RPOOL $ZFS_IMAGE $bename
 ApplyChanges $HOSTNAME $TZ $LANG $keyboard_layout \
