@@ -60,7 +60,7 @@ export PKG_IMAGE=$ROOTDIR
 
 RMRF="
     /var/pkg /usr/share/man /usr/lib/iconv
-    /usr/lib/python2.7 /usr/lib/python3.13
+    /usr/lib/python2.7 /usr/lib/python$PYTHONVER
 "
 
 DEBUG_PKGS="system/dtrace developer/dtrace"
@@ -348,7 +348,7 @@ function step_strip {
 function step_sanity {
     if [ -z "$BIGROOT" ]; then
         of=`mktemp`
-        $KYKDIR/bin/sanity $ROOTDIR | LC_ALL=C sort > $of
+        /usr/bin/python$PYTHONVER $KYKDIR/bin/sanity $ROOTDIR | LC_ALL=C sort > $of
         diff -U0 $DATADIR/baseline $of
         if [ $? -gt 0 ]; then
             echo
