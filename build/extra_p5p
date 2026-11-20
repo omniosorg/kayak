@@ -18,10 +18,15 @@
 # example the VM packages will be added if the associated hypervisor is
 # detected during installation.
 
+SRCDIR=`dirname $0`
+[ ${SRCDIR:0:1} = "/" ] || SRCDIR=`pwd`/$SRCDIR
+
+. $SRCDIR/../lib/defs.sh
+
 typeset -A pkg
 pkg['vmware']=(system/virtualization/open-vm-tools)
 pkg['iwn']=(driver/network/iwn)
-pkg['cloud-init']=(system/management/cloud-init pyyaml-313)
+pkg['cloud-init']=(system/management/cloud-init pyyaml-$PYTHONPKGVER)
 
 set -- `getopt d:o: $*`
 for i in $*

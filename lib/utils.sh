@@ -79,8 +79,8 @@ function runsvccfg {
 function runpkg {
     log "runpkg: $*"
     LD_LIBRARY_PATH=$ALTROOT/usr/lib/amd64 \
-        PYTHONPATH=$ALTROOT/usr/lib/pkg/python3.13:$ALTROOT/usr/lib/python3.13/vendor-packages \
-        $ALTROOT/usr/bin/python3.13 \
+        PYTHONPATH=$ALTROOT/usr/lib/pkg/python$PYTHONVER:$ALTROOT/usr/lib/python$PYTHONVER/vendor-packages \
+        $ALTROOT/usr/bin/python$PYTHONVER \
         $ALTROOT/usr/bin/pkg -R $ALTROOT "$@" | pipelog
     sed -i '/^last_uuid/d' $ALTROOT/var/pkg/pkg5.image
 }

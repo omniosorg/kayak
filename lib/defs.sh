@@ -35,6 +35,9 @@ OOCEPUBURL_EXTRA="${OOCEPUBURL/core/extra}"
 
 OOCEBRAICHURL=$URLPREFIX/bloody/braich
 
+PYTHONVER=3.15
+PYTHONPKGVER=${PYTHONVER//./}
+
 DEFPATH=/usr/bin:/usr/sbin:/sbin:/usr/gnu/bin
 DEFSUPATH=/usr/sbin:/sbin:/usr/bin
 EXTRAPATH=/usr/bin:/usr/sbin:/sbin:/opt/ooce/bin:/usr/gnu/bin
