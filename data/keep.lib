@@ -3,7 +3,7 @@
 /lib/amd64/libavl.so.1
 /lib/amd64/libc.so.1
 /lib/amd64/libcmdutils.so.1
-/lib/amd64/libcrypto.so.3
+/lib/amd64/libcrypto.so.4
 /lib/amd64/libcryptoutil.so.1
 /lib/amd64/libctf.so.1
 /lib/amd64/libcurses.so
@@ -39,7 +39,7 @@
 /lib/amd64/libsec.so.1
 /lib/amd64/libsecdb.so.1
 /lib/amd64/libsocket.so.1
-/lib/amd64/libssl.so.3
+/lib/amd64/libssl.so.4
 /lib/amd64/libsysevent.so.1
 /lib/amd64/libtsol.so.2
 /lib/amd64/libumem.so.1
@@ -255,7 +255,6 @@
 /usr/lib/amd64/libz.so.*
 /usr/lib/amd64/libzpool.so.1
 /usr/lib/amd64/libzstd.so.*
-/usr/lib/amd64/ossl-modules/legacy.so
 /usr/lib/devfsadm/devfsadmd
 /usr/lib/devfsadm/linkmod/SUNW_audio_link.so
 /usr/lib/devfsadm/linkmod/SUNW_cfg_link.so

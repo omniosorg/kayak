@@ -28,7 +28,6 @@ Unused library lib/fm/amd64/libfmevent.so.1
 Unused library lib/ld.so.1
 Unused library lib/libdl.so.1
 Unused library lib/nss_files.so.1
-Unused library usr/lib/amd64/ossl-modules/legacy.so
 Unused library usr/lib/devfsadm/linkmod/SUNW_audio_link.so
 Unused library usr/lib/devfsadm/linkmod/SUNW_cfg_link.so
 Unused library usr/lib/devfsadm/linkmod/SUNW_disk_link.so
